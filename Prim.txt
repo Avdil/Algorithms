@@ -1,0 +1,85 @@
+Пусть ребро графа представлено экземпляром класса Edge:
+
+class Edge
+{
+    public int v1, v2;
+
+    public int weight;
+
+    public Edge(int v1, int v2, int weight)
+    {
+        this.v1 = v1;
+        this.v2 = v2;
+        this.weight = weight;
+    }
+}
+	
+, где v1 и v2 – номера вершин (нумерация вершин начинается с нуля), инцидентных ребру, а weight  - вес ребра.
+
+А все ребра графа пусть представлены в виде списка:
+
+List<Edge> E;
+
+Приведем реализацию алгоритма Прима на языке C#.
+
+public void algorithmByPrim(int numberV, List<Edge> E, List<Edge> MST)
+{
+    //неиспользованные ребра
+    List<Edge> notUsedE = new List<Edge>(E);
+    //использованные вершины
+    List<int> usedV = new List<int>();
+    //неиспользованные вершины
+    List<int> notUsedV = new List<int>();
+    for (int i = 0; i < numberV; i++)
+        notUsedV.Add(i);
+    //выбираем случайную начальную вершину
+    Random rand = new Random();
+    usedV.Add(rand.Next(0, numberV));
+    notUsedV.RemoveAt(usedV[0]);
+    while (notUsedV.Count > 0)
+    {
+        int minE = -1; //номер наименьшего ребра
+        //поиск наименьшего ребра
+        for (int i = 0; i < notUsedE.Count; i++)
+        {
+            if ((usedV.IndexOf(notUsedE[i].v1) != -1) && (notUsedV.IndexOf(notUsedE[i].v2) != -1) ||
+                (usedV.IndexOf(notUsedE[i].v2) != -1) && (notUsedV.IndexOf(notUsedE[i].v1) != -1))
+            {
+                if (minE != -1)
+                {
+                    if (notUsedE[i].weight < notUsedE[minE].weight)
+                        minE = i;
+                }
+                else
+                    minE = i;
+            }
+        }
+        //заносим новую вершину в список использованных и удаляем ее из списка неиспользованных
+        if (usedV.IndexOf(notUsedE[minE].v1) != -1)
+        {
+            usedV.Add(notUsedE[minE].v2);
+            notUsedV.Remove(notUsedE[minE].v2);
+        }
+        else
+        {
+            usedV.Add(notUsedE[minE].v1);
+            notUsedV.Remove(notUsedE[minE].v1);
+        }
+        //заносим новое ребро в дерево и удаляем его из списка неиспользованных
+        MST.Add(notUsedE[minE]);
+        notUsedE.RemoveAt(minE);
+    }
+}
+Аргументы метода algorithmByPrim: numberV – количество вершин в исходном графе, E – список ребер исходного графа, MST – список, в который будут занесены ребра, составляющие минимальное остовное дерево.
+
+Кратко опишем работу метода algorithmByPrim(). В начале инициализируются списки с данными: ребра, не включенные в дерево, вершины, включенные в дерево, и вершины, не включенные в дерево (строки 4-10). Затем выбирается случайная начальная вершина, с которой начнется построение минимального остовного дерева (строки 12-14). Цикл while будет продолжаться до тех пор, пока все вершины графа не будут включены в дерево (15-47). На каждой итерации цикла выполняется следующее:
+
+    Производится поиск ребра с наименьшим весом, один конец которого – это вершина, входящая в дерево, а другой – нет (строки 19-32).
+    Вершина, инцидентная найденному ребру, заносится в список использованных и удаляется из списка неиспользованных (строки 34-43).
+    Найденное ребро заносится в список ребер, составляющих дерево, и удаляется из списка неиспользованных ребер (строки 45-46).
+
+Перед вызовом метода algorithmByPrim(), необходимо создать список, в котором будут хранится ребра, составляющие минимальное остовное дерево:
+C#
+
+List<Edge> MST = new List<Edge>();
+algorithmByPrim(V.Count, E, MST);
